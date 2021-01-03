@@ -21,14 +21,12 @@ namespace ExamTasks
     {
         private List<Thread> threads;
         private Queue<TaskDelegate> tasks;
-        private int activeTaskCount;
         public TaskQueue(int threadCount)
         {
             tasks = new Queue<TaskDelegate>();
             threads = new List<Thread>();
             for (int i = 0; i < threadCount; i++)
             {
-                Interlocked.Increment(ref activeTaskCount);
                 var t = new Thread(DoThreadWork);
                 threads.Add(t);
                 t.IsBackground = true;
@@ -39,26 +37,7 @@ namespace ExamTasks
         {
             get { return threads.Count; }
         }
-        public void Close()
-        {
-            for (int i = 0; i < threads.Count; i++)
-                DoEnqueueTask(null);
-            lock (this)
-            {
-                while (activeTaskCount > 0)
-                    Monitor.Wait(this);
-            }
-            foreach (Thread t in threads)
-                t.Join();
-        }
         public void EnqueueTask(TaskDelegate task)
-        {
-            if (task != null)
-                DoEnqueueTask(task);
-            else
-                throw new ArgumentNullException("task");
-        }
-        private void DoEnqueueTask(TaskDelegate task)
         {
             lock (tasks)
             {
@@ -95,12 +74,13 @@ namespace ExamTasks
                     Console.WriteLine(ex.ToString());
                 }
             } while (task != null);
-            lock (this)
-            {
-                activeTaskCount--;
-                if (activeTaskCount == 0)
-                    Monitor.Pulse(this);
-            }
+        }
+        public void Close()
+        {
+            for (int i = 0; i < threads.Count; i++)
+                EnqueueTask(null);
+            foreach (Thread t in threads)
+                t.Join();
         }
     }
 }

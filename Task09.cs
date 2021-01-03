@@ -70,6 +70,12 @@ namespace ExamTasks
         {
             return new DynamicListEnum<T>(array, Count);
         }
+        public IEnumerator GetEnumeratorEx()
+        {
+            for (int i = 0; i < count; i++) {
+                yield return array[i];
+            }
+        }
     }
     public class DynamicListEnum<T> : IEnumerator
     {
