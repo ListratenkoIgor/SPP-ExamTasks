@@ -26,9 +26,12 @@ namespace ExamTasks
         }
         public void Write(string str)
         {
-            string time = DateTime.Now.ToString("yyyy-mm-dd HH:mm:ss");
-            writer.WriteLine(string.Format("{0} {1} {2}", time,
-            Thread.CurrentThread.ManagedThreadId, str));
+            if (!disposed)
+            {
+                string time = DateTime.Now.ToString("yyyy-mm-dd HH:mm:ss");
+                writer.WriteLine(string.Format("{0} {1} {2}", time,
+                Thread.CurrentThread.ManagedThreadId, str));
+            }
         }
         public void Dispose()
         {
